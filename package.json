@@ -1,0 +1,20 @@
+{
+  "name": "atcoder_hint",
+  "version": "1.0.0",
+  "description": "atcoderの精進中、考察が進まないが解説も見たいくない際に、解説からLLMがヒントを作成してくれるchrome拡張機能",
+  "homepage": "https://github.com/miieeeee/atcoder-hint#readme",
+  "bugs": {
+    "url": "https://github.com/miieeeee/atcoder-hint/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miieeeee/atcoder-hint.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
