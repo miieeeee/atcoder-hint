@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "atcoder-hint",
+    "version": "1.0.0",
+    "description": "A basic example extension with only required keys",
+    "icons": {
+        "128": "./img/icon.jpg"
+    },
+    "permissions": [
+        "storage"
+    ],
+    "options_page": "./options/options.html",
+    "content_scripts": [
+        {
+            "js": [
+                "./hint/content.js"
+            ],
+            "matches": [
+                "https://atcoder.jp/contests/*/tasks/*"
+            ]
+        }
+    ]
+}
