@@ -13,7 +13,7 @@
     "content_scripts": [
         {
             "js": [
-                "./hint/content.js"
+                "./dist/hint/content.js"
             ],
             "matches": [
                 "https://atcoder.jp/contests/*/tasks/*"
