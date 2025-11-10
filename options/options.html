@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>設定 - My LLM Extension</title>
+    <link rel="stylesheet" href="./options.css">
+</head>
+
+<body>
+
+    <h1>設定</h1>
+
+    <div class="container">
+        <label for="gemini-api-key">Gemini APIキー:</label>
+        <!-- 
+      セキュリティのため、type="password" にして入力内容が見えないようにします。
+      このままだと入力内容を確認できないため、表示/非表示トグルをJSで追加します。
+        -->
+        <input type="password" id="gemini-api-key" placeholder="sk-...">
+        <span id="toggle-visibility" class="toggle-visibility">表示する</span>
+
+        <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
+            APIキーはブラウザの同期ストレージ (<code>chrome.storage.sync</code>) に安全に保存されます。
+        </p>
+
+        <div class="controls">
+            <button id="save-button">保存</button>
+            <span id="status">保存しました！</span>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>
