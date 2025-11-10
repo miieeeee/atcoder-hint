@@ -1,0 +1,46 @@
+var __api_key = "";
+
+export async function load_api_key() {
+    return new Promise((resolve, reject) => {
+        console.log("ストレージからAPIキーの取得を開始...");
+
+        chrome.storage.local.get({ llmApiKey: "" }, (items) => {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError);
+                return reject(chrome.runtime.lastError);
+            }
+
+            __api_key = items.llmApiKey;
+
+            console.log("キーの取得完了:", __api_key ? "キーあり" : "キーがありません");
+
+            resolve();
+        });
+    });
+}
+
+export async function chat_completion(prompt) {
+    const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-goog-api-key": __api_key,
+            },
+            body: JSON.stringify({
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ]
+            })
+        }
+    )
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+}
