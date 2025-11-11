@@ -21,5 +21,10 @@
   },
   "devDependencies": {
     "esbuild": "^0.27.0"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.24.6"
   }
 }

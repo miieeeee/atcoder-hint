@@ -4,3 +4,4 @@
 */esbuild
 */@esbuild
 dist/
+node_modules

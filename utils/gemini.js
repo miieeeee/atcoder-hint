@@ -1,4 +1,7 @@
-var __api_key = "";
+import { GoogleGenAI } from "@google/genai";
+import zodToJsonSchema from "zod-to-json-schema";
+var __api_key = null;
+var __client = null;
 
 export async function load_api_key() {
     return new Promise((resolve, reject) => {
@@ -19,28 +22,20 @@ export async function load_api_key() {
     });
 }
 
-export async function chat_completion(prompt) {
-    const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-goog-api-key": __api_key,
-            },
-            body: JSON.stringify({
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": prompt
-                            }
-                        ]
-                    }
-                ]
-            })
+export async function chat_completion(prompt, response_schema = null) {
+    if (!__api_key) {
+        await load_api_key();
+    }
+    if (!__client) {
+        __client = new GoogleGenAI({ apiKey: __api_key });
+    }
+    const response = await __client.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseJsonSchema: response_schema ? zodToJsonSchema(response_schema) : null
         }
-    )
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    });
+    return response.text;
 }
