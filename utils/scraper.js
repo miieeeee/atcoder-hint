@@ -15,3 +15,10 @@ export async function get_editorial_content(url) {
     const editorial_dom = parser.parseFromString(editorial_html, "text/html");
     return editorial_dom.querySelector("h2.mt-1").parentElement.innerHTML;
 }
+
+export async function get_problem_statement(url) {
+    const parser = new DOMParser();
+    const problem_html = await fetch(url).then(response => response.text());
+    const problem_dom = parser.parseFromString(problem_html, "text/html");
+    return problem_dom.getElementById("task-statement").querySelector(".lang-ja").innerHTML;
+}

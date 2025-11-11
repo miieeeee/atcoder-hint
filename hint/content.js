@@ -1,5 +1,5 @@
 import { load_api_key, chat_completion } from "../utils/gemini";
-import { get_all_editorial_link, get_editorial_content } from "../utils/scraper";
+import { get_all_editorial_link, get_editorial_content, get_problem_statement } from "../utils/scraper";
 
 // load_api_key().then(_ => {
 //     chat_completion(load_prompt("", "")).then(
@@ -8,8 +8,11 @@ import { get_all_editorial_link, get_editorial_content } from "../utils/scraper"
 // });
 
 const editorial_list_url = location.href.endsWith("editorial") ? location.href : location.href + "/editorial";
+const problem_url = location.href.endsWith("editorial") ? location.href.substring(0, location.href.length - "editorial".length) : location.href;
 get_all_editorial_link(editorial_list_url).then(links => links.forEach(x => get_editorial_content(x)
     .then(x => console.log(x))));
+
+get_problem_statement(problem_url).then(x => console.log(x));
 
 function load_prompt(problem, tutorial) {
     problem = `
