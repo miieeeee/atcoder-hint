@@ -1,103 +1,118 @@
-import { load_api_key, chat_completion } from "../utils/gemini";
+import { hint_schema } from "./type";
+import { chat_completion } from "../utils/gemini";
 import { get_all_editorial_link, get_editorial_content, get_problem_statement } from "../utils/scraper";
 
-// load_api_key().then(_ => {
-//     chat_completion(load_prompt("", "")).then(
-//         response => console.log(response)
-//     );
-// });
 
 const editorial_list_url = location.href.endsWith("editorial") ? location.href : location.href + "/editorial";
 const problem_url = location.href.endsWith("editorial") ? location.href.substring(0, location.href.length - "editorial".length) : location.href;
-get_all_editorial_link(editorial_list_url).then(links => links.forEach(x => get_editorial_content(x)
-    .then(x => console.log(x))));
 
-get_problem_statement(problem_url).then(x => console.log(x));
-
-function load_prompt(problem, tutorial) {
-    problem = `
-問題文
-( と ) のみからなる文字列 
-S があります。
-
-太郎君と次郎君はこの文字列を使って以下のゲームをします。
-
-太郎君が先手、次郎君が後手となり、以下の 
-3 種類の操作のうちいずれか 
-1 つを選んで行うことを交互に繰り返します。
-
-S の先頭の文字を削除する。
-S の末尾の文字を削除する。
-終了宣言をする。
-S の長さがちょうど 
-K になったとき、あるいはいずれかのプレイヤーが終了宣言をした時点で、ゲームが終了します。ゲームの終了時点で 
-S が正しい括弧列であるならば次郎君の勝利、そうでないならば太郎君の勝利となります。
-
-ゲーム開始前の 
-S が与えられるので、両者が最適に行動した場合の勝者を求めてください。
-
-T 個のテストケースが与えられるので、それぞれについて解いてください。
-
-正しい括弧列とは
-制約
-1≤T≤10 
-5
- 
-1≤K<∣S∣≤10 
-6
- 
-S は ( と ) のみからなる文字列
-T,K は整数
-すべてのテストケースにわたる 
-∣S∣ の総和は 
-10 
-6
-  以下
-    `
-    tutorial = `
-    S が正しい括弧列でない場合、太郎君が最初のターンで終了宣言をすることで太郎君が勝つことができます。以下、
-S が正しい括弧列である場合を考えます。
-
-S が正しい括弧列である時、
-S の長さは偶数であるため、次郎君が操作する直前の 
-S の長さは必ず奇数となります。よって、次郎君が終了宣言をしても必ず負けてしまうので、終了宣言をする可能性があるのは太郎君だけです。
-
-また、
-K が奇数の場合は太郎君が終了宣言をしないことで、
-∣S∣=K となるまでゲームが続行し、必ず太郎君が勝つことができます。以下、
-K が偶数の場合のみ考えます。
-
-ここで重要な事実として、どんな正しい括弧列 
-S についても、太郎君が先頭あるいは末尾の 
-1 文字を削除し次郎君に渡した時、次郎君が正しい括弧列に戻すためにできる行動は高々 
-1 つです。
-
-S の先頭が ((、末尾が )) の場合
-太郎君が先頭を消すと次郎君は末尾を消し、太郎君が末尾を消すと次郎君は先頭を消すため、次の盤面が一意に定まります（必ずしも次郎君が 
-S を正しい括弧列に戻すことができるとは限りません）。
-
-そうでない場合
-太郎君の最適な戦略は、先頭と末尾のうち、連続する () が少ない方を選び、消していくことです。例えば、
-S が ()(())()() のとき、太郎君と次郎君は先頭の () を消去し、
-S は (())()() となります。次にもう一度先頭を削除すれば正しい括弧列が崩れます。
-
-このようにして、
-S の長さが 
-K になるまで次郎君が正しい括弧列を維持できた場合次郎君の勝ち、できなかった場合太郎君の勝ちとなります。`
+function load_prompt(problem, editorial) {
     const prompt = `
     # 競技プログラミングの問題に対するヒントの作成依頼
     ## 概要
     以下で競技プログラミングの問題と、その解説を与えるので、それらを元にヒントを作成してください。
     ヒントは段階的に4から8個作り、各ヒントは答えの核心は付かないあくまでも考察の補助となるようなもの、また、その人の実力が上がるようなものにしてください。
-    また、各ヒントはtoogleリストで出してください。出力はhtml形式でお願いします。
     ## 問題
     ${problem}
     ## 解説
-    ${tutorial}\
+    ${editorial}
     `
+
     return prompt;
 }
 
+async function generate_hints() {
+    const all_editorial_url = await get_all_editorial_link(editorial_list_url)
+    const all_editorial = await Promise.all(
+        all_editorial_url.map(url => get_editorial_content(url))
+    );
+    const problem_statement = await get_problem_statement(problem_url);
+    const prompt = load_prompt(problem_statement, all_editorial[0]);
 
-function load_tutorial() {
+    const hints = await chat_completion(prompt, hint_schema);
+
+    return hint_schema.parse(JSON.parse(hints));
 }
+
+function embed_hints(hints) {
+    const targetDiv = document.getElementById('task-statement');
+
+    if (targetDiv) {
+        // DocumentFragment: 複数の要素をまとめてDOMに追加するための効率的な方法
+        const fragment = document.createDocumentFragment();
+
+        hints.forEach((hintObject, index) => {
+            const details = document.createElement('details');
+
+            const summary = document.createElement('summary');
+            summary.textContent = `ヒント ${index + 1} を見る`;
+
+            const content = document.createElement('p');
+
+            content.textContent = hintObject.content;
+
+            content.style.margin = "0.5em 0 0 1em";
+
+            details.appendChild(summary);
+            details.appendChild(content);
+
+            details.classList.add('custom-hint-details');
+
+            fragment.appendChild(details);
+        });
+
+        targetDiv.prepend(fragment);
+
+        console.log('ヒントの挿入が完了しました。');
+    } else {
+        console.log('ターゲット要素 (div.task-statements) が見つかりませんでした。');
+    }
+}
+
+
+async function handleGenerateClick(event) {
+    const button = event.target;
+
+    try {
+        button.disabled = true;
+        button.textContent = "ヒントを生成中...";
+
+        const hints_array = await generate_hints(); // ここで配列が返る
+        embed_hints(hints_array);
+
+        button.remove();
+
+    } catch (error) {
+        console.error("ヒントの生成に失敗しました:", error);
+        button.disabled = false;
+        button.textContent = "ヒントを生成 (再試行)";
+    }
+}
+
+function setupButton() {
+    const targetDiv = document.getElementById('task-statement');
+
+    if (targetDiv) {
+        // 1. ボタンを作成
+        const hintButton = document.createElement('button');
+        hintButton.textContent = "AIによるヒントを生成する";
+        hintButton.id = "ai-hint-generator-button";
+
+        // (任意) スタイルを適用
+        hintButton.style.padding = "8px 12px";
+        hintButton.style.margin = "10px 0";
+        hintButton.style.cursor = "pointer";
+        hintButton.style.display = "block"; // 他の要素と並ばないように
+
+        // 2. クリックイベントリスナーを設定
+        hintButton.addEventListener('click', handleGenerateClick);
+
+        // 3. ターゲットの先頭にボタンを挿入
+        targetDiv.prepend(hintButton);
+
+    } else {
+        console.log("ボタン設置場所 (div#task-statement) が見つかりませんでした。");
+    }
+}
+
+setupButton();

@@ -11,7 +11,6 @@ export async function get_all_editorial_link(editorial_list_url = "https://atcod
 export async function get_editorial_content(url) {
     const parser = new DOMParser();
     const editorial_html = await fetch(url).then(response => response.text());
-    console.log(editorial_html);
     const editorial_dom = parser.parseFromString(editorial_html, "text/html");
     return editorial_dom.querySelector("h2.mt-1").parentElement.innerHTML;
 }
