@@ -1,10 +1,15 @@
 import { load_api_key, chat_completion } from "../utils/gemini";
+import { get_all_editorial_link, get_editorial_content } from "../utils/scraper";
 
-load_api_key().then(_ => {
-    chat_completion(load_prompt("", "")).then(
-        response => console.log(response)
-    );
-});
+// load_api_key().then(_ => {
+//     chat_completion(load_prompt("", "")).then(
+//         response => console.log(response)
+//     );
+// });
+
+const editorial_list_url = location.href.endsWith("editorial") ? location.href : location.href + "/editorial";
+get_all_editorial_link(editorial_list_url).then(links => links.forEach(x => get_editorial_content(x)
+    .then(x => console.log(x))));
 
 function load_prompt(problem, tutorial) {
     problem = `
