@@ -30,7 +30,7 @@ export async function chat_completion(prompt, response_schema = null) {
         __client = new GoogleGenAI({ apiKey: __api_key });
     }
     const response = await __client.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-pro",
         contents: prompt,
         config: {
             responseMimeType: "application/json",

@@ -26,6 +26,9 @@ async function generate_hints() {
     const all_editorial = await Promise.all(
         all_editorial_url.map(url => get_editorial_content(url))
     );
+    if(all_editorial.length == 0) {
+        throw new Error("No editorial");
+    }
     const problem_statement = await get_problem_statement(problem_url);
     const prompt = load_prompt(problem_statement, all_editorial[0]);
 
